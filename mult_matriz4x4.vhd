@@ -34,11 +34,19 @@ entity mult_matriz4x4 is
 	PORT(
 		clk : IN std_logic;
 		rst : IN std_logic;
-		start : IN std_logic;          
+		start : IN std_logic; 
+		
+		selBram : IN std_logic_vector(1 downto 0);
+		altView : IN std_logic;
+		writeB : IN std_logic_vector(0 downto 0);
+		dataIn : in std_logic_vector(15 downto 0);
+		addressIn : in std_logic_vector(3 downto 0);
+		
 		done : OUT std_logic;
 		idle : OUT std_logic;
 		ready : OUT std_logic;
-		resp : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
+		
+		bram_out : out std_logic_vector(15 downto 0)
 	);
 end mult_matriz4x4;
 
@@ -83,6 +91,7 @@ architecture Behavioral of mult_matriz4x4 is
   
 	COMPONENT adder
 	PORT(
+		clk : IN std_logic;
 		enableAdder : IN std_logic;
 		rst : IN std_logic;
 		toAdd : IN std_logic_vector(15 downto 0);          
@@ -97,8 +106,13 @@ signal addressA, addressB, addressR : std_logic_vector(3 downto 0);
 signal valA, valB : std_logic_vector(7 downto 0);
 signal valR, valMult, respR : std_logic_vector(15 downto 0);
 
-begin
+signal addressA_s, addressB_s, addressR_s : std_logic_vector(3 downto 0);
+signal writeA_s, writeB_s, writeR_s : std_logic_vector(0 downto 0);
 
+begin
+	
+	
+	
 	Inst_pc: pc PORT MAP(
 		clk,
 		rst,
@@ -114,21 +128,40 @@ begin
 		enableAdd 
 	);
 	
+	
+	writeA_s <= writeB when (altView = '1' and selBram = "01") else 
+					"0";
+					
+	writeB_s <= writeB when (altView = '1' and selBram = "10") else 
+					"0";
+	
+	addressA_s <= addressIn when (altView = '1') else 
+					  addressA;
+	addressB_s <= addressIn when (altView = '1') else 
+					  addressB;
+	addressR_s <= addressIn when (altView = '1') else 
+					  addressR;
+	
+	bram_out <= "00000000"&valA when (altView = '1' and selBram = "01") else
+					"00000000"&valB when (altView = '1' and selBram = "10") else
+					respR;
+							
+	
 	memA : mem_entrada
   PORT MAP (
     clka => clk,
-    wea => "0",
-    addra => addressA,
-    dina => "00000000",
+    wea => writeA_s,
+    addra => addressA_s,
+    dina => dataIn(7 downto 0),
     douta => valA
   );
   
   memB : mem_entrada
   PORT MAP (
     clka => clk,
-    wea => "0",
-    addra => addressB,
-    dina => "00000000",
+    wea => writeB_s,
+    addra => addressB_s,
+    dina => dataIn(7 downto 0),
     douta => valB
   );
   
@@ -136,7 +169,7 @@ begin
   PORT MAP (
     clka => clk,
     wea => writeR,
-    addra => addressR,
+    addra => addressR_s,
     dina => valR,
     douta => respR
   );
@@ -144,13 +177,13 @@ begin
  valMult <= valA * valB;
 	
 	Inst_adder: adder PORT MAP(
+		clk => clk,
 		enableAdder => enableAdd,
 		rst => rstAdder,
 		toAdd => valMult,
 		result => valR
 	);
 	
-resp <= valR;
 
 end Behavioral;
 

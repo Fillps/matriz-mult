@@ -32,7 +32,8 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 entity adder is
 	port(
-		enableAdder, rst : IN std_logic;
+		
+		clk, enableAdder, rst : IN std_logic;
 		toAdd : IN std_logic_vector(15 downto 0);
 		result : OUT std_logic_vector(15 downto 0)
 		);
@@ -41,11 +42,11 @@ end adder;
 architecture Behavioral of adder is
 signal result_s : std_logic_vector(15 downto 0);
 begin
-	process(enableAdder, rst, toAdd)
+	process(clk, enableAdder, rst, toAdd)
 	begin
 		if (rst = '1') then
 			result_s <= "0000000000000000";
-		elsif (enableAdder = '1') then
+		elsif rising_edge(clk) and (enableAdder = '1') then
 			result_s <= result_s + toAdd;
 		end if;
 	end process;

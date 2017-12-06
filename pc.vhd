@@ -56,17 +56,9 @@ done <= done_s;
 						next_st <= IDLE_ST;
 					end if;
 				when RST_ST =>
-					addressA_t <= "0000";
-					addressB_t <= "0000";
-					addressR_t <= "0000";
-					countA <= "0000";
-					countB <= "0000";
-					rowA <= "00";
-					colB <= "00";
-					idle <= '1';
-					ready <= '1';
+					idle <= '0';
+					ready <= '0';
 					writeR <= '0';
-					rstAdder <= '1';
 					enableAdd <= '0';
 					done_s <= '0';
 					
@@ -85,7 +77,7 @@ done <= done_s;
 					enableAdd <= '0';
 					next_st <= NEXT_VALUE_ST;
 				when NEXT_VALUE_ST =>
-					if ((countA = "0000" and countB = "0000") or (countA = "0001" and countB = "0100")) then
+					if ((countA = "0000" and countB = "0000")) then
 						rstAdder <= '1';
 					else
 						rstAdder <= '0';
