@@ -107,7 +107,7 @@ begin
 dataIN <= "00000000"&BRAM_b_data_in;
 
 matriz4x4: mult_matriz4x4 PORT MAP(
-		clk => clock200hz,
+		clk => clk,
 		rst => rst,
 		start => start,
 		selBram => sel_bram,
